@@ -1,0 +1,212 @@
+#include <91x_lib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#define LED GPIO7->DR[0x3FC]
+#define GPIO3 ((GPIO_TypeDef *)GPIO3_BASE)
+#define SW GPIO3->DR[0x3FC]
+
+void Intio(void);
+void lcd_init(void);
+void lcd_print(const unsigned char* str);
+void lcd_clear(void);
+void delay_ms(unsigned int ms);
+int GPIO_ReadInputDataBit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+void run_leds(void);
+
+void delay_ms(unsigned int ms) {
+    volatile unsigned int i;
+    for (i = 0; i < ms * 1000; i++);
+}
+
+float measure(void) {
+    ADC->CR &= 0xFF7F; 
+    ADC->CR = 0x0002; 
+    ADC->CR |= 0x0001;
+    delay_ms(100);
+    while ((ADC->CR & 0x8000) == 0);
+    return (ADC->DR0 & 0x03FF);
+}
+
+void shuffle(int *deck, int size) {
+    int i, j, temp;
+    for (i = size - 1; i > 0; i--) {
+        j = rand() % (i + 1);
+        temp = deck[i];
+        deck[i] = deck[j];
+        deck[j] = temp;
+    }
+}
+
+void blink_leds(int times, unsigned int delay) {
+    int i;
+    for (i = 0; i < times; i++) {
+        LED = 0xFF; // 
+        delay_ms(delay);
+        LED = 0x00; // 
+        delay_ms(delay);
+    }
+}
+
+void set_cursor(unsigned char column, unsigned char line);
+
+int main(void) {
+    unsigned int number = 0;
+    int running = 0;
+    int paused = 0;
+    int win = 0;
+    int cardIndex = 0;
+    int displayedCards[52];
+    int displayedIndex = 0;
+    int i;
+    int seed = 0;  // Move declaration to the top
+    int direction = 1;
+    unsigned char n = 1;
+    float vmax;
+
+    // Arrays for card details
+    char* suits[] = { "Hearts", "Diamonds", "Clubs", "Spades" };
+    char* values[] = { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
+    char buffer[16];
+    int deck[52];
+
+    // Initialize peripherals
+    Intio();
+    lcd_init();
+    vmax = measure();  // ????? ??????? ?? ???????????
+    // Seed the random number generator using an arbitrary method based on button state
+    for (i = 0; i < 100; i++) {
+        if ((SW & 0x40) == 0) {
+            seed = seed % 100;
+        }
+        delay_ms(10);  // Small delay to simulate time passing
+    }
+    srand(seed);
+
+    // Fill the deck with card indices
+    for (i = 0; i < 52; i++) {
+        deck[i] = i;
+    }
+
+    // Shuffle the deck
+    shuffle(deck, 52);
+    blink_leds(2, vmax);
+    lcd_print((const unsigned char*)"Welcome Player's ");
+    delay_ms(2000);
+    lcd_clear();
+    lcd_print((const unsigned char*)"Let the Bingo... ");
+    set_cursor(0, 1);
+    delay_ms(2000);
+    blink_leds(5, vmax);
+    lcd_print((const unsigned char*)"BEGIN!!!");
+    blink_leds(5, vmax);
+    delay_ms(2000);
+    lcd_clear();
+    lcd_print((const unsigned char*)"For Start Please ");
+    set_cursor(0, 1);
+    lcd_print((const unsigned char*)"Press 1");
+    delay_ms(1500);
+
+    // Wait for the user to press SW1 to start
+    while ((SW & 0x40) != 0);
+
+    // Wait for the user to release SW1
+    while ((SW & 0x40) == 0);
+
+    running = 1;
+
+    while (running) {
+        vmax = measure();  // 
+        LED = n;
+        delay_ms((unsigned int)vmax);  // 
+
+        if (direction == 1) {
+            n = n << 1;
+            if (n == 0x80) {
+                direction = -1;
+            }
+        } else {
+            n = n >> 1;
+            if (n == 0x01) {
+                direction = 1;
+            }
+        }
+
+        set_cursor(0, 1);
+        // Handle running state
+        if (!paused) {
+            cardIndex = deck[displayedIndex];
+            displayedCards[displayedIndex++] = cardIndex;
+            if (displayedIndex >= 52) {
+                displayedIndex = 0;  // Restart if all cards have been displayed
+            }
+
+            // Format card details into buffer
+            sprintf(buffer, "%s of %s", values[cardIndex % 13], suits[cardIndex / 13]);
+            lcd_print((const unsigned char*)buffer);
+            delay_ms(1500);
+            lcd_clear();
+        }
+
+        // Check for pause button (SW1)
+        if ((SW & 0x40) == 0) {
+            paused = !paused;
+            lcd_print(paused ? (const unsigned char*)"Game Paused            " : (const unsigned char*)" Keep Running...         ");
+            set_cursor(0, 1);
+            delay_ms(1000);
+            blink_leds(3, vmax);
+
+            // Wait for the user to release SW1
+            while ((SW & 0x40) == 0);
+        }
+
+        // Check for win button (SW2)
+        if ((SW & 0x20) == 0) {
+            win = 1;
+
+            // Wait for the user to release SW2
+            while ((SW & 0x20) == 0);
+        }
+
+        // If win state, display all cards in displayedCards array
+        if (win) {
+            blink_leds(10, vmax);
+            lcd_print((const unsigned char*)"Ladis & Gentlman");
+            set_cursor(0, 1);
+            lcd_print((const unsigned char*)"We Have a Winner!!");
+            blink_leds(10, vmax);
+            delay_ms(2000);
+            lcd_clear();
+            for (i = 0; i < displayedIndex; i++) {
+                LED = n;
+                delay_ms((unsigned int)vmax);
+
+                if (direction == 1) {
+                    n = n << 1;
+                    if (n == 0x80) {
+                        direction = -1;
+                    }
+                } else {
+                    n = n >> 1;
+                    if (n == 0x01) {
+                        direction = 1;
+                    }
+                }
+
+                cardIndex = displayedCards[i];
+                sprintf(buffer, "%s of %s       ", values[cardIndex % 13], suits[cardIndex / 13]);
+                lcd_print((const unsigned char*)buffer);
+                delay_ms(1500);
+                lcd_clear();
+            }
+            win = 0;
+            blink_leds(3, vmax);
+            running = 0;
+            lcd_print((const unsigned char*)"For a New Game ");
+            set_cursor(0, 1);
+            lcd_print((const unsigned char*)"Please Press 3");
+            delay_ms(2000);
+        }
+    }
+}
