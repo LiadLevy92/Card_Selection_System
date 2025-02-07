@@ -1,0 +1,190 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+//#include <DFPlayer_Mini_Mp3.h>
+#include <SoftwareSerial.h>
+
+// הגדרת ה-LCD עם כתובת I2C 0x27
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// הגדרת חיבור ה-DFPlayer Mini
+SoftwareSerial mySerial(10, 11); // RX, TX
+
+const int buttonPin = 6; // כפתור הפעלה/השהיה
+const int winButtonPin = 7; // כפתור הצהרת ניצחון
+bool systemOn = false;
+bool paused = false;
+bool gameWon = false;
+int buttonState;
+int winButtonState;
+int lastButtonState = HIGH; // במצב HIGH בתחילת התוכנית
+int lastWinButtonState = HIGH; // במצב HIGH בתחילת התוכנית
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
+
+const char* ranks[] = {"Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Valet", "Queen", "King"};
+const char* suits[] = {"Clubs", "Spades", "Diamonds", "Hearts"};
+
+// תווים מותאמים לסמלים
+byte heartSymbol[8] = {
+  0b00000,
+  0b01010,
+  0b11111,
+  0b11111,
+  0b01110,
+  0b00100,
+  0b00000,
+  0b00000
+};
+
+byte diamondSymbol[8] = {
+  0b00100,
+  0b01110,
+  0b11111,
+  0b11111,
+  0b01110,
+  0b00100,
+  0b00000,
+  0b00000
+};
+
+byte clubSymbol[8] = {
+  0b00100,
+  0b01110,
+  0b11111,
+  0b11111,
+  0b10101,
+  0b00100,
+  0b00000,
+  0b00000
+};
+
+byte spadeSymbol[8] = {
+  0b00100,
+  0b01110,
+  0b10101,
+  0b11111,
+  0b11111,
+  0b01110,
+  0b00100,
+  0b00000
+};
+
+// רשימה לשמירת רצף הקלפים
+String cardHistory[100];
+int cardCount = 0;
+
+void setup() {
+  pinMode(buttonPin, INPUT_PULLUP); // שימוש ב-Pull-up פנימית
+  pinMode(winButtonPin, INPUT_PULLUP); // שימוש ב-Pull-up פנימית
+  lcd.begin(16, 2); // מציין את מספר העמודות והשורות במסך ה-LCD
+  lcd.createChar(0, heartSymbol); // יצירת תו מותאם ללב
+  lcd.createChar(1, diamondSymbol); // יצירת תו מותאם ליהלום
+  lcd.createChar(2, clubSymbol); // יצירת תו מותאם לתלתלן
+  lcd.createChar(3, spadeSymbol); // יצירת תו מותאם לעלה
+  lcd.backlight();
+  lcd.print("Hello player!");
+  delay(2000);
+  lcd.clear();
+  lcd.print("Press button");
+
+  // הגדרת DFPlayer Mini
+  mySerial.begin(9600);
+  //mp3_set_serial(mySerial);
+  //mp3_set_volume(20); // הגדרת עוצמת קול בין 0 ל-30
+}
+
+void loop() {
+  int reading = digitalRead(buttonPin);
+  int winReading = digitalRead(winButtonPin);
+
+  // בדיקת לחיצה על כפתור הפעלה/השהיה
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();
+  }
+  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;
+      if (buttonState == LOW) { // שינוי לבדיקה של LOW
+        if (!systemOn) {
+          systemOn = true;
+          paused = false;
+          gameWon = false;
+          cardCount = 0;
+          lcd.clear();
+          lcd.print("Welcome!");
+          delay(2000);
+        } else if (!paused) {
+          paused = true;
+          lcd.clear();
+          lcd.print("Paused");
+        } else {
+          paused = false;
+          lcd.clear();
+          lcd.print("Resumed");
+          delay(2000);
+        }
+      }
+    }
+  }
+  lastButtonState = reading;
+
+  // בדיקת לחיצה על כפתור הניצחון
+  if (winReading != lastWinButtonState) {
+    lastDebounceTime = millis();
+  }
+  
+  if ((millis() - lastDebounceTime) > debounceDelay) { // תיקון השם כאן
+    if (winReading != winButtonState) {
+      winButtonState = winReading;
+      if (winButtonState == LOW) { // שינוי לבדיקה של LOW
+        gameWon = true;
+        systemOn = false;
+        paused = false;
+        lcd.clear();
+        lcd.print("Game Won!");
+        delay(2000);
+        lcd.clear();
+        for (int i = 0; i < cardCount; i++) {
+          lcd.setCursor(0, 0);
+          lcd.print(cardHistory[i]);
+          delay(2000);
+        }
+      }
+    }
+  }
+  lastWinButtonState = winReading;
+
+  // בחירת והצגת קלפים
+  if (systemOn && !paused && !gameWon) {
+    int rankIndex = random(0, 13);
+    int suitIndex = random(0, 4);
+
+    String cardName = String(ranks[rankIndex]) + " " + String(suits[suitIndex]);
+
+    cardHistory[cardCount++] = cardName;
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Card is:");
+    lcd.setCursor(0, 1);
+    lcd.print(cardName);
+
+    // הצגת סמל בצד השני של המסך
+    lcd.setCursor(15, 1); // הגדרת המיקום לתו המותאם
+    switch (suitIndex) {
+      case 0: lcd.write(byte(2)); break; // תלתלן לצידו של השם כאשר ערך 0
+      case 1: lcd.write(byte(3)); break; // עלה לצידו של השם כאשר ערך 1
+      case 2: lcd.write(byte(1)); break; // יהלום לצידו של השם כאשר ערך 2
+      case 3: lcd.write(byte(0)); break; // לב לצידו של השם כאשר ערך 3
+    }
+
+    // השמעת הקובץ המתאים
+    //int fileNumber = rankIndex * 4 + suitIndex + 1;
+   // mp3_play(fileNumber);
+
+    delay(2000);
+  } else if (systemOn && paused) {
+    delay(200);
+  }
+}
