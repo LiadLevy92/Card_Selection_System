@@ -1,0 +1,633 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;/******************************************************
+                       ***********************/
+    2 00000000         ;/* STR91xCFG.S: STR91x Flash Configuration - requires I
+                       CP Flash Algorithms   */
+    3 00000000         ;/*              OTP, User Code, Configuration and Secur
+                       ity Bit               */
+    4 00000000         ;/******************************************************
+                       ***********************/
+    5 00000000         ;/* <<< Use Configuration Wizard in Context Menu >>>    
+                                             */
+    6 00000000         ;/******************************************************
+                       ***********************/
+    7 00000000         ;/* This file is part of the uVision/ARM development too
+                       ls.                   */
+    8 00000000         ;/* Copyright (c) 2005-2006 Keil Software. All rights re
+                       served.               */
+    9 00000000         ;/* This software may only be used under the terms of a 
+                       valid, current,       */
+   10 00000000         ;/* end user licence from KEIL for a compatible version 
+                       of KEIL software      */
+   11 00000000         ;/* development tools. Nothing else gives you the right 
+                       to use this software. */
+   12 00000000         ;/******************************************************
+                       ***********************/
+   13 00000000         
+   14 00000000         
+   15 00000000         ;// <e0> OTP Memory
+   16 00000000         ;//   <o1>  OTP Byte 0  <0x0-0xFF>  
+   17 00000000         ;//   <o2>  OTP Byte 1  <0x0-0xFF>
+   18 00000000         ;//   <o3>  OTP Byte 2  <0x0-0xFF>
+   19 00000000         ;//   <o4>  OTP Byte 3  <0x0-0xFF>
+   20 00000000         ;//   <o5>  OTP Byte 4  <0x0-0xFF>
+   21 00000000         ;//   <o6>  OTP Byte 5  <0x0-0xFF>
+   22 00000000         ;//   <o7>  OTP Byte 6  <0x0-0xFF>
+   23 00000000         ;//   <o8>  OTP Byte 7  <0x0-0xFF>
+   24 00000000         ;//   <o9>  OTP Byte 8  <0x0-0xFF>
+   25 00000000         ;//   <o10> OTP Byte 9  <0x0-0xFF>
+   26 00000000         ;//   <o11> OTP Byte 10 <0x0-0xFF>
+   27 00000000         ;//   <o12> OTP Byte 11 <0x0-0xFF>
+   28 00000000         ;//   <o13> OTP Byte 12 <0x0-0xFF>
+   29 00000000         ;//   <o14> OTP Byte 13 <0x0-0xFF>
+   30 00000000         ;//   <o15> OTP Byte 14 <0x0-0xFF>
+   31 00000000         ;//   <o16> OTP Byte 15 <0x0-0xFF>
+   32 00000000         ;//   <o17> OTP Byte 16 <0x0-0xFF>
+   33 00000000         ;//   <o18> OTP Byte 17 <0x0-0xFF>
+   34 00000000         ;//   <o19> OTP Byte 18 <0x0-0xFF>
+   35 00000000         ;//   <o20> OTP Byte 19 <0x0-0xFF>
+   36 00000000         ;//   <o21> OTP Byte 20 <0x0-0xFF>
+   37 00000000         ;//   <o22> OTP Byte 21 <0x0-0xFF>
+   38 00000000         ;//   <o23> OTP Byte 22 <0x0-0xFF>
+   39 00000000         ;//   <o24> OTP Byte 23 <0x0-0xFF>
+   40 00000000         ;//   <o25> OTP Byte 24 <0x0-0xFF>
+   41 00000000         ;//   <o26> OTP Byte 25 <0x0-0xFF>
+   42 00000000         ;//   <o27> OTP Byte 26 <0x0-0xFF>
+   43 00000000         ;//   <o28> OTP Byte 27 <0x0-0xFF>
+   44 00000000         ;//   <o29> OTP Byte 28 <0x0-0xFF>
+   45 00000000         ;//   <o30> OTP Byte 29 <0x0-0xFF>
+   46 00000000         ;//   <o31> OTP Byte 30 <0x0-0xFF> <i> Mask Major/Minor 
+                       Identifier
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   47 00000000         ;//   <o32> OTP Byte 31 <0x0-0xFF> <i> Family Major/Mino
+                       r Identifier
+   48 00000000         ;// </e0>
+   49 00000000 00000000 
+                       OTP     EQU              0
+   50 00000000 000000FF 
+                       OTP_B0  EQU              0xFF
+   51 00000000 000000FF 
+                       OTP_B1  EQU              0xFF
+   52 00000000 000000FF 
+                       OTP_B2  EQU              0xFF
+   53 00000000 000000FF 
+                       OTP_B3  EQU              0xFF
+   54 00000000 000000FF 
+                       OTP_B4  EQU              0xFF
+   55 00000000 000000FF 
+                       OTP_B5  EQU              0xFF
+   56 00000000 000000FF 
+                       OTP_B6  EQU              0xFF
+   57 00000000 000000FF 
+                       OTP_B7  EQU              0xFF
+   58 00000000 000000FF 
+                       OTP_B8  EQU              0xFF
+   59 00000000 000000FF 
+                       OTP_B9  EQU              0xFF
+   60 00000000 000000FF 
+                       OTP_B10 EQU              0xFF
+   61 00000000 000000FF 
+                       OTP_B11 EQU              0xFF
+   62 00000000 000000FF 
+                       OTP_B12 EQU              0xFF
+   63 00000000 000000FF 
+                       OTP_B13 EQU              0xFF
+   64 00000000 000000FF 
+                       OTP_B14 EQU              0xFF
+   65 00000000 000000FF 
+                       OTP_B15 EQU              0xFF
+   66 00000000 000000FF 
+                       OTP_B16 EQU              0xFF
+   67 00000000 000000FF 
+                       OTP_B17 EQU              0xFF
+   68 00000000 000000FF 
+                       OTP_B18 EQU              0xFF
+   69 00000000 000000FF 
+                       OTP_B19 EQU              0xFF
+   70 00000000 000000FF 
+                       OTP_B20 EQU              0xFF
+   71 00000000 000000FF 
+                       OTP_B21 EQU              0xFF
+   72 00000000 000000FF 
+                       OTP_B22 EQU              0xFF
+   73 00000000 000000FF 
+                       OTP_B23 EQU              0xFF
+   74 00000000 000000FF 
+                       OTP_B24 EQU              0xFF
+   75 00000000 000000FF 
+                       OTP_B25 EQU              0xFF
+   76 00000000 000000FF 
+                       OTP_B26 EQU              0xFF
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   77 00000000 000000FF 
+                       OTP_B27 EQU              0xFF
+   78 00000000 000000FF 
+                       OTP_B28 EQU              0xFF
+   79 00000000 000000FF 
+                       OTP_B29 EQU              0xFF
+   80 00000000 00000013 
+                       OTP_B30 EQU              0x13        ; Factory Programme
+                                                            d
+   81 00000000 00000091 
+                       OTP_B31 EQU              0x91        ; Factory Programme
+                                                            d
+   82 00000000         
+   83 00000000         ;// <e0> User Code
+   84 00000000         ;//   <o1> User Code Word
+   85 00000000         ;// </e0>
+   86 00000000 00000001 
+                       UC      EQU              1
+   87 00000000 FFFFFFFF 
+                       UC_W    EQU              0xFFFFFFFF
+   88 00000000         
+   89 00000000         ;// <e0> Configuration
+   90 00000000         ;//   <h> Main Flash Sector Protect
+   91 00000000         ;//     <o1.0> Sector 0
+   92 00000000         ;//     <o1.1> Sector 1
+   93 00000000         ;//     <o1.2> Sector 2
+   94 00000000         ;//     <o1.3> Sector 3
+   95 00000000         ;//     <o1.4> Sector 4
+   96 00000000         ;//     <o1.5> Sector 5
+   97 00000000         ;//     <o1.6> Sector 6
+   98 00000000         ;//     <o1.7> Sector 7
+   99 00000000         ;//   </h>
+  100 00000000         ;//   <h> Secondary Flash Sector Protect
+  101 00000000         ;//     <o2.0> Sector 0
+  102 00000000         ;//     <o2.1> Sector 1
+  103 00000000         ;//     <o2.2> Sector 2
+  104 00000000         ;//     <o2.3> Sector 3
+  105 00000000         ;//   </h>
+  106 00000000         ;//   <o2.16> CSX (Chip Select Mapping)
+  107 00000000         ;//   <o2.17> LVD_TH (VDDQ Threshold Voltage)
+  108 00000000         ;//   <o2.18> LVD_RST_SEL (LVD Reset Select)
+  109 00000000         ;//   <o2.19> LVD_WNG_SEL (LVD Warning Select)
+  110 00000000         ;//   <o2.31> OTP_LOCK (OTP Lock Bit)
+  111 00000000         ;// </e0>
+  112 00000000 00000001 
+                       CFG     EQU              1
+  113 00000000 00000000 
+                       CFG_W0  EQU              0x00000000
+  114 00000000 00000000 
+                       CFG_W1  EQU              0x00000000
+  115 00000000         
+  116 00000000         ;// <e0> Chip Security
+  117 00000000         ;//   <o1.0> CSEC (Security Bit)
+  118 00000000         ;// </e0>
+  119 00000000 00000001 
+                       CSB     EQU              1
+  120 00000000 00000000 
+                       CSB_B   EQU              0x00
+  121 00000000         
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  122 00000000         
+  123 00000000                 IF               OTP <> 0
+  133                          ENDIF
+  134 00000000         
+  135 00000000                 IF               UC <> 0
+  136 00000000                 AREA             |.ARM.__AT_0x510000|, CODE, REA
+DONLY
+  137 00000000 FFFFFFFF        DCD              UC_W
+  138 00000004                 ENDIF
+  139 00000004         
+  140 00000004                 IF               CFG <> 0
+  141 00000004                 AREA             |.ARM.__AT_0x520000|, CODE, REA
+DONLY
+  142 00000000 00000000        DCD              CFG_W0
+  143 00000004 00000000        DCD              CFG_W1
+  144 00000008                 ENDIF
+  145 00000008         
+  146 00000008                 IF               CSB <> 0
+  147 00000008                 AREA             |.ARM.__AT_0x520008|, CODE, REA
+DONLY
+  148 00000000 00              DCB              CSB_B
+  149 00000001                 ENDIF
+  150 00000001         
+  151 00000001         
+  152 00000001                 END
+Command Line: --debug --xref --cpu=ARM966E-S --apcs=interwork --depend=.\str91x
+cfg.d -o.\str91xcfg.o -IC:\Keil\ARM\RV31\INC -IC:\Keil\ARM\CMSIS\Include -IC:\K
+eil\ARM\Inc\ST\91x --predefine="__EVAL SETA 1" --list=.\str91xcfg.lst STR91xCFG
+.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.ARM.__AT_0x510000 00000000
+
+Symbol: .ARM.__AT_0x510000
+   Definitions
+      At line 136 in file STR91xCFG.s
+   Uses
+      None
+Comment: .ARM.__AT_0x510000 unused
+1 symbol
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.ARM.__AT_0x520000 00000000
+
+Symbol: .ARM.__AT_0x520000
+   Definitions
+      At line 141 in file STR91xCFG.s
+   Uses
+      None
+Comment: .ARM.__AT_0x520000 unused
+1 symbol
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.ARM.__AT_0x520008 00000000
+
+Symbol: .ARM.__AT_0x520008
+   Definitions
+      At line 147 in file STR91xCFG.s
+   Uses
+      None
+Comment: .ARM.__AT_0x520008 unused
+1 symbol
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+CFG 00000001
+
+Symbol: CFG
+   Definitions
+      At line 112 in file STR91xCFG.s
+   Uses
+      At line 140 in file STR91xCFG.s
+Comment: CFG used once
+CFG_W0 00000000
+
+Symbol: CFG_W0
+   Definitions
+      At line 113 in file STR91xCFG.s
+   Uses
+      At line 142 in file STR91xCFG.s
+Comment: CFG_W0 used once
+CFG_W1 00000000
+
+Symbol: CFG_W1
+   Definitions
+      At line 114 in file STR91xCFG.s
+   Uses
+      At line 143 in file STR91xCFG.s
+Comment: CFG_W1 used once
+CSB 00000001
+
+Symbol: CSB
+   Definitions
+      At line 119 in file STR91xCFG.s
+   Uses
+      At line 146 in file STR91xCFG.s
+Comment: CSB used once
+CSB_B 00000000
+
+Symbol: CSB_B
+   Definitions
+      At line 120 in file STR91xCFG.s
+   Uses
+      At line 148 in file STR91xCFG.s
+Comment: CSB_B used once
+OTP 00000000
+
+Symbol: OTP
+   Definitions
+      At line 49 in file STR91xCFG.s
+   Uses
+      At line 123 in file STR91xCFG.s
+Comment: OTP used once
+OTP_B0 000000FF
+
+Symbol: OTP_B0
+   Definitions
+      At line 50 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B0 unused
+OTP_B1 000000FF
+
+Symbol: OTP_B1
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+   Definitions
+      At line 51 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B1 unused
+OTP_B10 000000FF
+
+Symbol: OTP_B10
+   Definitions
+      At line 60 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B10 unused
+OTP_B11 000000FF
+
+Symbol: OTP_B11
+   Definitions
+      At line 61 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B11 unused
+OTP_B12 000000FF
+
+Symbol: OTP_B12
+   Definitions
+      At line 62 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B12 unused
+OTP_B13 000000FF
+
+Symbol: OTP_B13
+   Definitions
+      At line 63 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B13 unused
+OTP_B14 000000FF
+
+Symbol: OTP_B14
+   Definitions
+      At line 64 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B14 unused
+OTP_B15 000000FF
+
+Symbol: OTP_B15
+   Definitions
+      At line 65 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B15 unused
+OTP_B16 000000FF
+
+Symbol: OTP_B16
+   Definitions
+      At line 66 in file STR91xCFG.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Absolute symbols
+
+      None
+Comment: OTP_B16 unused
+OTP_B17 000000FF
+
+Symbol: OTP_B17
+   Definitions
+      At line 67 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B17 unused
+OTP_B18 000000FF
+
+Symbol: OTP_B18
+   Definitions
+      At line 68 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B18 unused
+OTP_B19 000000FF
+
+Symbol: OTP_B19
+   Definitions
+      At line 69 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B19 unused
+OTP_B2 000000FF
+
+Symbol: OTP_B2
+   Definitions
+      At line 52 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B2 unused
+OTP_B20 000000FF
+
+Symbol: OTP_B20
+   Definitions
+      At line 70 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B20 unused
+OTP_B21 000000FF
+
+Symbol: OTP_B21
+   Definitions
+      At line 71 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B21 unused
+OTP_B22 000000FF
+
+Symbol: OTP_B22
+   Definitions
+      At line 72 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B22 unused
+OTP_B23 000000FF
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Absolute symbols
+
+
+Symbol: OTP_B23
+   Definitions
+      At line 73 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B23 unused
+OTP_B24 000000FF
+
+Symbol: OTP_B24
+   Definitions
+      At line 74 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B24 unused
+OTP_B25 000000FF
+
+Symbol: OTP_B25
+   Definitions
+      At line 75 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B25 unused
+OTP_B26 000000FF
+
+Symbol: OTP_B26
+   Definitions
+      At line 76 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B26 unused
+OTP_B27 000000FF
+
+Symbol: OTP_B27
+   Definitions
+      At line 77 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B27 unused
+OTP_B28 000000FF
+
+Symbol: OTP_B28
+   Definitions
+      At line 78 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B28 unused
+OTP_B29 000000FF
+
+Symbol: OTP_B29
+   Definitions
+      At line 79 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B29 unused
+OTP_B3 000000FF
+
+Symbol: OTP_B3
+   Definitions
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Absolute symbols
+
+      At line 53 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B3 unused
+OTP_B30 00000013
+
+Symbol: OTP_B30
+   Definitions
+      At line 80 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B30 unused
+OTP_B31 00000091
+
+Symbol: OTP_B31
+   Definitions
+      At line 81 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B31 unused
+OTP_B4 000000FF
+
+Symbol: OTP_B4
+   Definitions
+      At line 54 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B4 unused
+OTP_B5 000000FF
+
+Symbol: OTP_B5
+   Definitions
+      At line 55 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B5 unused
+OTP_B6 000000FF
+
+Symbol: OTP_B6
+   Definitions
+      At line 56 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B6 unused
+OTP_B7 000000FF
+
+Symbol: OTP_B7
+   Definitions
+      At line 57 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B7 unused
+OTP_B8 000000FF
+
+Symbol: OTP_B8
+   Definitions
+      At line 58 in file STR91xCFG.s
+   Uses
+      None
+
+
+
+ARM Macro Assembler    Page 6 Alphabetic symbol ordering
+Absolute symbols
+
+Comment: OTP_B8 unused
+OTP_B9 000000FF
+
+Symbol: OTP_B9
+   Definitions
+      At line 59 in file STR91xCFG.s
+   Uses
+      None
+Comment: OTP_B9 unused
+UC 00000001
+
+Symbol: UC
+   Definitions
+      At line 86 in file STR91xCFG.s
+   Uses
+      At line 135 in file STR91xCFG.s
+Comment: UC used once
+UC_W FFFFFFFF
+
+Symbol: UC_W
+   Definitions
+      At line 87 in file STR91xCFG.s
+   Uses
+      At line 137 in file STR91xCFG.s
+Comment: UC_W used once
+40 symbols
+374 symbols in table
